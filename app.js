@@ -31,7 +31,7 @@ app.use(express.static("./public"));
 // ............................body parser............................
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.json());
-app.use(fileUpload());
+app.use(fileUpload({ useTempFiles: true }));
 
 // ............................routes...........................
 app.get("/", (req, res) => res.send("<h2>The home page<h2/>"));

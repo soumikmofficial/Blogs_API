@@ -1,3 +1,5 @@
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 const User = require("../models/User");
 const Token = require("../models/Token");
 const { StatusCodes } = require("http-status-codes");
@@ -34,7 +36,7 @@ const register = async (req, res) => {
     verificationToken,
   });
 
-  // *the avatar image
+  // *uploading the avatar
   if (req.files) {
     const avatarImage = req.files.image;
     if (!avatarImage.mimetype.startsWith("image")) {
@@ -44,16 +46,16 @@ const register = async (req, res) => {
     if (avatarImage.size > maxSize) {
       throw new CustomError.BadRequestError(`File size too big`);
     }
-    // FIXME: file name should be unique to avoid conflict... add to the end of file name
-    const random = Math.floor(Math.random() * 100000);
-    console.log(random);
-    const imagePath = path.join(
-      __dirname,
-      `../public/uploads/avatars/${avatarImage.name}${random}`
+    let avatar_url;
+    await cloudinary.uploader.upload(
+      avatarImage.tempFilePath,
+      { folder: "blog_avatar" },
+      (err, result) => {
+        avatar_url = result.secure_url;
+      }
     );
-    avatarImage.mv(imagePath);
-    avatar = `/uploads/avatars/${avatarImage.name}`;
-    user.avatar = avatar;
+    fs.unlinkSync(req.files.image.tempFilePath);
+    user.avatar = avatar_url;
     await user.save();
   }
 
@@ -227,14 +229,12 @@ const uploadAvatar = async (req, res) => {
   if (avatarImage.size > maxSize) {
     throw new CustomError.BadRequestError(`File size too big`);
   }
-  // FIXME: file name should be unique to avoid conflict... add to the end of file name
-  const imagePath = path.join(
-    __dirname,
-    `../public/uploads/avatars/${avatarImage.name}`
-  );
-  avatarImage.mv(imagePath);
 
-  res.status(200).json({ msg: "upload avatar" });
+  cloudinary.uploader.upload(avatarImage.tempFilePath, (err, result) => {
+    console.log(result.secure_url);
+  });
+
+  res.status(200).json({ msg: "uploaded avatar" });
 };
 module.exports = {
   register,
