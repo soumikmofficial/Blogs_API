@@ -10,6 +10,14 @@ const authRoutes = require("./routes/authRoutes");
 // packages
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const fileUpload = require("express-fileupload");
+// cloudinary
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 
 process.on("uncaughtException", (err) => {
   console.log(err.message);
@@ -17,9 +25,13 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+// ........public................
+app.use(express.static("./public"));
+
 // ............................body parser............................
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.json());
+app.use(fileUpload());
 
 // ............................routes...........................
 app.get("/", (req, res) => res.send("<h2>The home page<h2/>"));

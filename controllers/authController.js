@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Token = require("../models/Token");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
+const path = require("path");
 const {
   attachCookiesToResponse,
   createTokenUser,
@@ -20,7 +21,6 @@ const register = async (req, res) => {
     throw new CustomError.BadRequestError("Email already exists");
   }
 
-  // first registered user is an admin
   const isFirstAccount = (await User.countDocuments({})) === 0;
   const role = isFirstAccount ? "admin" : "user";
 
@@ -33,15 +33,32 @@ const register = async (req, res) => {
     role,
     verificationToken,
   });
+
+  // *the avatar image
+  if (req.files) {
+    const avatarImage = req.files.image;
+    if (!avatarImage.mimetype.startsWith("image")) {
+      throw new CustomError.BadRequestError(`File type not supported`);
+    }
+    const maxSize = 1024 * 1024;
+    if (avatarImage.size > maxSize) {
+      throw new CustomError.BadRequestError(`File size too big`);
+    }
+    // FIXME: file name should be unique to avoid conflict... add to the end of file name
+    const random = Math.floor(Math.random() * 100000);
+    console.log(random);
+    const imagePath = path.join(
+      __dirname,
+      `../public/uploads/avatars/${avatarImage.name}${random}`
+    );
+    avatarImage.mv(imagePath);
+    avatar = `/uploads/avatars/${avatarImage.name}`;
+    user.avatar = avatar;
+    await user.save();
+  }
+
+  // *send verification mail
   const origin = "http://localhost:3000";
-  // const newOrigin = 'https://react-node-user-workflow-front-end.netlify.app';
-
-  // const tempOrigin = req.get('origin');
-  // const protocol = req.protocol;
-  // const host = req.get('host');
-  // const forwardedHost = req.get('x-forwarded-host');
-  // const forwardedProtocol = req.get('x-forwarded-proto');
-
   await sendVerificationEmail({
     name: user.name,
     email: user.email,
@@ -124,6 +141,8 @@ const login = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ user: tokenUser });
 };
+
+// TODO: LOGOUT
 const logout = async (req, res) => {
   await Token.findOneAndDelete({ user: req.user.userId });
 
@@ -138,6 +157,7 @@ const logout = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "user logged out!" });
 };
 
+// TODO: FORGOT PASSWORD
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -169,6 +189,8 @@ const forgotPassword = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ msg: "Please check your email for reset password link" });
 };
+
+// TODO: RESET PASSWORD
 const resetPassword = async (req, res) => {
   const { token, email, password } = req.body;
   if (!token || !email || !password) {
@@ -193,6 +215,27 @@ const resetPassword = async (req, res) => {
   res.send("reset password");
 };
 
+//  TODO: UPLOAD AVATAR
+
+const uploadAvatar = async (req, res) => {
+  const avatarImage = req.files.image;
+  console.log(avatarImage.mimetype);
+  if (!avatarImage.mimetype.startsWith("image")) {
+    throw new CustomError.BadRequestError(`File type not supported`);
+  }
+  const maxSize = 1024 * 1024;
+  if (avatarImage.size > maxSize) {
+    throw new CustomError.BadRequestError(`File size too big`);
+  }
+  // FIXME: file name should be unique to avoid conflict... add to the end of file name
+  const imagePath = path.join(
+    __dirname,
+    `../public/uploads/avatars/${avatarImage.name}`
+  );
+  avatarImage.mv(imagePath);
+
+  res.status(200).json({ msg: "upload avatar" });
+};
 module.exports = {
   register,
   login,
@@ -200,4 +243,5 @@ module.exports = {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  uploadAvatar,
 };

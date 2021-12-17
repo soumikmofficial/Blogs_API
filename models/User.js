@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
   avatar: {
     type: String,
-    default: "/uploads/default.jpg",
+    default: "/uploads/avatars/default.jpg",
   },
   name: {
     type: String,
