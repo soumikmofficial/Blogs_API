@@ -10,6 +10,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 const authRoutes = require("./routes/authRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const userRoutes = require("./routes/userRoutes");
+const likeRoutes = require("./routes/likeRoutes");
 
 // packages
 const cookieParser = require("cookie-parser");
@@ -43,6 +44,7 @@ app.get("/", (req, res) => res.send("<h2>The home page<h2/>"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/blogs", blogRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/likes", likeRoutes);
 
 // ............................error handlers............................
 app.use(errorHandlerMiddleware);

@@ -16,8 +16,16 @@ const BlogSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    numOfLikes: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
+
+BlogSchema.pre("remove", async function () {
+  await this.model("Like").deleteMany({ blog: this._id });
+});
 
 module.exports = mongoose.model("Blog", BlogSchema);
