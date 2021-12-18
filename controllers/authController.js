@@ -70,6 +70,7 @@ const register = async (req, res) => {
   // send verification token back only while testing in postman!!!
   res.status(StatusCodes.CREATED).json({
     msg: "Success! Please check your email to verify account",
+    verificationToken,
   });
 };
 

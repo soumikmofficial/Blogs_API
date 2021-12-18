@@ -3,14 +3,18 @@ require("express-async-errors");
 
 const express = require("express");
 const app = express();
+
 // imports
 const connectDB = require("./config/connect");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const authRoutes = require("./routes/authRoutes");
+const blogRoutes = require("./routes/blogRoutes");
+
 // packages
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
+
 // cloudinary
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
@@ -36,6 +40,7 @@ app.use(fileUpload({ useTempFiles: true }));
 // ............................routes...........................
 app.get("/", (req, res) => res.send("<h2>The home page<h2/>"));
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/blogs", blogRoutes);
 
 // ............................error handlers............................
 app.use(errorHandlerMiddleware);
