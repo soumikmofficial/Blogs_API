@@ -42,10 +42,27 @@ const getCurrentUserBlogs = async (req, res) => {
   res.status(StatusCodes.OK).json({ blogs });
 };
 
+// TODO: UPDATE BLOG
+const updateBlog = async (req, res) => {
+  const { id: blogId } = req.params;
+  const blog = await Blog.findOne({ _id: blogId });
+  if (!blog) {
+    throw new CustomError.BadRequestError(
+      `Couldn't find any blog with the id of '${blogId}'`
+    );
+  }
+  checkPermissions(req.user, blog.author);
+  const updated = await Blog.findOneAndUpdate({ _id: blogId }, req.body, {
+    new: true,
+  });
+
+  res.status(StatusCodes.OK).json({ success: true, blog: updated });
+};
 module.exports = {
   getAllBlogs,
   createBlog,
   getSingleBlog,
   getCurrentUserBlogs,
   getCurrentUserBlogs,
+  updateBlog,
 };
