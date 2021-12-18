@@ -9,11 +9,16 @@ const {
   getSingleBlog,
   getCurrentUserBlogs,
   updateBlog,
+  deleteBlog,
 } = require("../controllers/blogController");
 
 router.route("/").get(getAllBlogs);
 router.route("/").post(authenticateUser, createBlog);
 router.route("/my-blogs").get(authenticateUser, getCurrentUserBlogs);
-router.route("/:id").get(getSingleBlog).patch(authenticateUser, updateBlog);
+router
+  .route("/:id")
+  .get(getSingleBlog)
+  .patch(authenticateUser, updateBlog)
+  .delete(authenticateUser, deleteBlog);
 
 module.exports = router;

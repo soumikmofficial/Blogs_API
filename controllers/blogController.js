@@ -58,6 +58,24 @@ const updateBlog = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ success: true, blog: updated });
 };
+
+// TODO: Delete BLOG
+const deleteBlog = async (req, res) => {
+  const { id: blogId } = req.params;
+  const blog = await Blog.findOne({ _id: blogId });
+  if (!blog) {
+    throw new CustomError.BadRequestError(
+      `Couldn't find any blog with the id of '${blogId}'`
+    );
+  }
+  checkPermissions(req.user, blog.author);
+  await blog.remove();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ success: true, msg: `Deleted "${blog.title}" successfully` });
+};
+
 module.exports = {
   getAllBlogs,
   createBlog,
@@ -65,4 +83,5 @@ module.exports = {
   getCurrentUserBlogs,
   getCurrentUserBlogs,
   updateBlog,
+  deleteBlog,
 };
