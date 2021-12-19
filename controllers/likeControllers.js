@@ -2,7 +2,6 @@ const Like = require("../models/Like");
 const Blog = require("../models/Blog");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
-const { checkPermissions } = require("../utils");
 
 // TODO: SUBMIT LIKE
 const submitLike = async (req, res) => {

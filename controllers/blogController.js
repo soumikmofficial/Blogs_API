@@ -5,7 +5,33 @@ const { checkPermissions } = require("../utils");
 
 // TODO: GET ALL BLOGS
 const getAllBlogs = async (req, res) => {
-  const blogs = await Blog.find({});
+  // .....................search blogs...................
+  let queryObj = {};
+  const { search, sortBy, author } = req.query;
+
+  if (search) {
+    queryObj.title = { $regex: search, $options: "i" };
+  }
+  if (author) {
+    queryObj.author = author;
+  }
+  let result = Blog.find(queryObj);
+
+  // .....................sort...................
+  if (sortBy) {
+    sortList = sortBy.split(",").join(" ");
+    result = result.sort(sortList);
+  } else {
+    result = result.sort("-createdAt");
+  }
+
+  // ...................pagination / skip / limit.................
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 3;
+  const skip = (page - 1) * limit;
+  result = result.skip(skip).limit(limit);
+
+  const blogs = await result;
   res.status(StatusCodes.OK).json({ numOfBlogs: blogs.length, blogs });
 };
 
