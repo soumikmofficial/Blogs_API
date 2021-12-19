@@ -16,6 +16,11 @@ const likeRoutes = require("./routes/likeRoutes");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
+const rateLimiter = require("express-rate-limit");
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const cors = require("cors");
+const mongoSanitize = require("express-mongo-sanitize");
 
 // cloudinary
 const cloudinary = require("cloudinary").v2;
@@ -30,6 +35,19 @@ process.on("uncaughtException", (err) => {
   console.log(`Shutting down server due to uncaught exception rejection.`);
   process.exit(1);
 });
+
+// ...........security...................
+app.set("trust proxy", 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+  })
+);
+app.use(helmet());
+app.use(cors());
+app.use(xss());
+app.use(mongoSanitize());
 
 // ........public................
 app.use(express.static("./public"));
